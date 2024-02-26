@@ -4,7 +4,7 @@ from modelbuilder.model import Model
 from modelbuilder.validation.validate import build_metrics
 
 from api.helpers.gcp import get_df_from_bq_query
-from config.config import QUERY_TRAINDATA, KEYS, FEATURES, TARGET
+from config.config import QUERY_TRAINDATA, KEYS, FEATURES_CAT, FEATURES_NUM, TARGET
 
 
 def load_dataset():
@@ -18,7 +18,7 @@ def load_dataset():
     print(data.head())
 
     # Create dataset object
-    dataset = Dataset.from_column_types(data, KEYS, FEATURES, TARGET)
+    dataset = Dataset.from_column_types(data, KEYS, FEATURES_CAT + FEATURES_NUM, TARGET)
     return dataset
 
 def create_pipeline():
@@ -34,8 +34,8 @@ def create_pipeline():
     from sklearn.pipeline import Pipeline
 
     # Dividimos las columnas en categóricas y numéricas
-    categorical_columns = ['Category']
-    numeric_columns = ['Engine_volume']
+    categorical_columns = ['Category'] # FEATURES_CAT
+    numeric_columns = ['Engine_volume'] # FEATURES_NUM
 
     # Definimos el preprocesamiento para cada tipo de columna
     # Para las categóricas usamos OneHotEncoder
@@ -56,7 +56,7 @@ def create_pipeline():
             ('num', numeric_transformer, numeric_columns)])
     
     predictor = LinearRegression()
-    
+
     pipeline = Pipeline([("preprocessor", preprocessor), ("predictor", predictor)])
     
     return pipeline
