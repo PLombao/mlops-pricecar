@@ -40,13 +40,13 @@ def create_pipeline():
     # Definimos el preprocesamiento para cada tipo de columna
     # Para las categóricas usamos OneHotEncoder
     categorical_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='most_frequent')),  # Tratamiento de valores faltantes
+        ('imputer', SimpleImputer(strategy='most_frequent')),  # Tratamiento de missings
         ('onehot', OneHotEncoder(handle_unknown='ignore'))])
 
     # Para las numéricas podríamos usar un SimpleImputer para tratar valores faltantes
-    # y opcionalmente un escalador como StandardScaler
+    # y para normalizar un StandardScaler
     numeric_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='median')),  # Tratamiento de valores faltantes
+        ('imputer', SimpleImputer(strategy='median')),  # Tratamiento de missings
         ('scaler', StandardScaler())])  # Escalado de características
 
     # Utilizamos ColumnTransformer para aplicar transformaciones por tipo de columna
