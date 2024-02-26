@@ -25,12 +25,39 @@ def create_pipeline():
     """
     Create pipeline for train
     """
-    from sklearn.preprocessing import MinMaxScaler
+    from sklearn.compose import ColumnTransformer
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import OneHotEncoder
+    from sklearn.impute import SimpleImputer
+    from sklearn.preprocessing import StandardScaler
     from sklearn.linear_model import LinearRegression
     from sklearn.pipeline import Pipeline
-    scaler = MinMaxScaler()
+
+    # Dividimos las columnas en categóricas y numéricas
+    categorical_columns = ['Category']
+    numeric_columns = ['Engine_volume']
+
+    # Definimos el preprocesamiento para cada tipo de columna
+    # Para las categóricas usamos OneHotEncoder
+    categorical_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='most_frequent')),  # Tratamiento de valores faltantes
+        ('onehot', OneHotEncoder(handle_unknown='ignore'))])
+
+    # Para las numéricas podríamos usar un SimpleImputer para tratar valores faltantes
+    # y opcionalmente un escalador como StandardScaler
+    numeric_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='median')),  # Tratamiento de valores faltantes
+        ('scaler', StandardScaler())])  # Escalado de características
+
+    # Utilizamos ColumnTransformer para aplicar transformaciones por tipo de columna
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('cat', categorical_transformer, categorical_columns),
+            ('num', numeric_transformer, numeric_columns)])
+    
     predictor = LinearRegression()
-    pipeline = Pipeline([("scaler", scaler), ("predictor", predictor)])
+    
+    pipeline = Pipeline([("preprocessor", preprocessor), ("predictor", predictor)])
     
     return pipeline
 
