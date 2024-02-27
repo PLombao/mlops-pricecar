@@ -3,7 +3,7 @@ from typing import Union, Optional, Any
 import mlflow
 import mlflow.pyfunc
 
-from pyfinsa.gcp.storage import extract_pickle
+from api.helpers.storage import extract_pickle
 
 def register_mlflow(experiment: str, python_model: mlflow.pyfunc.PythonModel, params: dict, metrics: dict, tags: dict,
                artifact_path: str = "model", conda_env: Union[str, dict, None] = None) -> Optional[str]:
