@@ -1,0 +1,36 @@
+version: '2.4'
+
+services:
+    mlflow:
+        build:
+            context: .
+            dockerfile: Dockerfile_mlflow
+        ports:
+            - "5000:5000"  
+        image: mlflow:0.1
+        container_name: mlflow
+        restart: always
+        environment:      
+            - PRODUCTION=0
+        volumes:
+            - ./mlruns:/mlruns
+    api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - "8000:8000"
+        image: api:0.1
+        container_name: api
+        restart: always
+        environment:      
+            - PRODUCTION=0
+            - MLFLOW_TRACKING_URI=http://35.205.180.19/
+        volumes:
+            - ./logs:/logs
+networks:
+    default:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 172.32.0.0/16
