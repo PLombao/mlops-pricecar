@@ -13,11 +13,13 @@ services:
         environment:      
             - PRODUCTION=0
         volumes:
-            - ./mlruns:/mlruns
+            - ./mlruns2:/mlruns2
     api:
         build:
             context: .
             dockerfile: Dockerfile
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         ports:
             - "8000:8000"
         image: api:0.1
@@ -25,7 +27,7 @@ services:
         restart: always
         environment:      
             - PRODUCTION=0
-            - MLFLOW_TRACKING_URI=http://35.205.180.19/
+            - MLFLOW_TRACKING_URI="http://host.docker.internal:5000"
         volumes:
             - ./logs:/logs
 networks:

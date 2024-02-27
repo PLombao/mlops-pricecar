@@ -73,7 +73,7 @@ def get_splitter():
     Get splitter for validation
     """
     from sklearn.model_selection import KFold
-    splitter = KFold(5, shuffle=True)
+    splitter = KFold(2, shuffle=True)
     return splitter
 
 def train():
@@ -83,7 +83,7 @@ def train():
     pipeline = create_pipeline()
 
     # Create object model and fit it
-    model_name = "car_price_lab"
+    model_name = "car_price"
     model = Model(model_name, pipeline)
     model.fit(dataset)
 
@@ -92,6 +92,8 @@ def train():
     metrics = build_metrics(model, model.dataset, splitter)
 
     # Register on mlflow
+    # import os
+    # os.environ["MLFLOW_TRACKING_URI"]="http://host.docker.internal:5000"
     runid = register_mlflow(experiment = model_name, python_model = model, metrics = metrics, params={}, tags = {})
     
 

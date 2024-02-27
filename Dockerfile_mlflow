@@ -11,5 +11,5 @@ RUN mkdir -p /mlflow/
 EXPOSE 5000
 
 CMD mlflow server \
-  --default-artifact-root gs://nifty-acolyte-415508/mlflow-plv \
+  --default-artifact-root gs://mlflow-plv \
   --host 0.0.0.0
