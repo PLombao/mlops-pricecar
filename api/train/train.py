@@ -3,7 +3,8 @@ from modelbuilder.dataset import Dataset
 from modelbuilder.model import Model
 from modelbuilder.validation.validate import build_metrics
 
-from api.helpers.gcp import get_df_from_bq_query
+from api.helpers.bq import get_df_from_bq_query
+from api.helpers.mlflow import register_mlflow
 from config.config import QUERY_TRAINDATA, KEYS, FEATURES_CAT, FEATURES_NUM, TARGET
 
 
@@ -30,7 +31,8 @@ def create_pipeline():
     from sklearn.preprocessing import OneHotEncoder
     from sklearn.impute import SimpleImputer
     from sklearn.preprocessing import StandardScaler
-    from sklearn.linear_model import LinearRegression
+    from sklearn.svm import SVR
+    from sklearn.ensemble import GradientBoostingRegressor, VotingRegressor
     from sklearn.pipeline import Pipeline
 
     # Dividimos las columnas en categóricas y numéricas
@@ -55,7 +57,12 @@ def create_pipeline():
             ('cat', categorical_transformer, categorical_columns),
             ('num', numeric_transformer, numeric_columns)])
     
-    predictor = LinearRegression()
+    # Predictor: ensemble con GB y SVR
+    predictor_params_SVR = {"epsilon":0.025}
+    predictor_params_GB = {"n_estimators": 100}
+
+    ensemble_models = [("SVR", SVR(**predictor_params_SVR)), ("GB", GradientBoostingRegressor(**predictor_params_GB))]
+    predictor = VotingRegressor(ensemble_models)
 
     pipeline = Pipeline([("preprocessor", preprocessor), ("predictor", predictor)])
     
@@ -76,7 +83,7 @@ def train():
     pipeline = create_pipeline()
 
     # Create object model and fit it
-    model_name = "car_price"
+    model_name = "car_price_lab"
     model = Model(model_name, pipeline)
     model.fit(dataset)
 
@@ -85,8 +92,8 @@ def train():
     metrics = build_metrics(model, model.dataset, splitter)
 
     # Register on mlflow
-
-    # Report model
+    runid = register_mlflow(experiment = model_name, python_model = model, metrics = metrics, params={}, tags = {})
+    
 
 
 
