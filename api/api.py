@@ -4,8 +4,7 @@ log = logging.getLogger(__name__)
 ##########################################
 
 import uvicorn
-from fastapi import FastAPI, BackgroundTasks
-
+from fastapi import FastAPI
 from api.routers import router
 
 
