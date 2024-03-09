@@ -3,11 +3,14 @@ import logging
 log = logging.getLogger(__name__)
 ##########################################
 
+import threading
 from fastapi import APIRouter, Response, status
-
-from .models import InferRequest, InferResponse
+from .models import InferRequest, InferResponse, DeployRequest
+from .train import train
+from .infer import ModelManager, parse_entry
 
 router = APIRouter()
+modelmanager = ModelManager()
 
 @router.get('/')
 def index():
@@ -16,37 +19,43 @@ def index():
 @router.get('/train')
 def index():
   # Launch training on another Thread
+  train_thread = threading.Thread(target=train)
 
-  return "Trained completed"
+  train_thread.start()
 
-{runid}
+  return "Train request received"
+
 @router.post('/deploy')
-def index():
+def index(payload: DeployRequest):
   runid = payload.runid
 
   # Deploy model
+  modelmanager.update_model(runid)
   
-  return "Model deployed"
+  return f"Model {runid} deployed"
 
 
 # MAIN METHOD ALIGN REQUEST {linea, timestamp, variables}
 @router.post('/predict', response_model=InferResponse)
 def index(payload: InferRequest):
-    # TODO: CHANGE THIS
-    # Parse entry
-    linea , asked_timestamp, variables = payload.linea, payload.timestamp, payload.variables
+    log.info(f"Received request to predict.")
     
-    log.info(f"Received request to align for line {linea} on {asked_timestamp}. Vars: {variables}")
-    
-    # Call backend
-    response = router.requester.get_aligned_data(linea, asked_timestamp, variables)
+    # Parse entry and build dataset
+    features = payload.features
+    log.info(features)
 
-    response = response.serialize()
+    dataset = parse_entry(features)
+    try:
+      # # Call backend
+      dataset = modelmanager.model.predict(None, dataset)
+      log.info(dataset)
 
-    log.info(f"Response dict: {response}")
+      response = dataset.data[["ID","prediction"]].to_dict("records")[0]
 
-    return response
-
+      log.info(f"Response dict: {response}")
+      return {"state": "OK", "prediction": response}
+    except:
+       log.exception("Ups")
 
 
 import random
@@ -54,4 +63,5 @@ import random
 def index():
     states = ["caimán", "crack", "esturión", "jefe", "gamo", "capibara", 
               "miura", "mastodonte","fiera", "figura", "titan", "diplodocus","triceraptors"]
-    return {"state": f"estamos bien, {states[random.randint(0,12)]}"}
+    return {"state": f"estamos bien, {states[random.randint(0,12)]}",
+            "model_deployed":modelmanager.runid}

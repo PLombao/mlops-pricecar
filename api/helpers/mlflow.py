@@ -37,11 +37,10 @@ def register_mlflow(experiment: str, python_model: mlflow.pyfunc.PythonModel, pa
             raise Exception("Error logging model in MLFlow.")
 
 
-def download_model_from_mlflow(runid:str, experimento:str, artifacts_bucket:str, experiments_folder:str) -> Any:
+def download_model_from_mlflow(runid:str, artifacts_bucket:str, experiments_folder:str) -> Any:
     """
     Downloads a MLFlow Model pickle from the storage bucket and unpickles it
     """
-    source_blob_name = f'{experiments_folder}/{str(experimento)}/{runid}/artifacts/model/python_model.pkl'
+    source_blob_name = f'{experiments_folder}/{runid}/artifacts/model/python_model.pkl'
     downloaded_model = extract_pickle(source_blob_name=source_blob_name, bucket_name=artifacts_bucket)
     return downloaded_model
-

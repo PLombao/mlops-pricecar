@@ -1,3 +1,8 @@
+######## HEADER TO CONFIGURE LOGS ########
+import logging
+log = logging.getLogger(__name__)
+##########################################
+
 
 from modelbuilder.dataset import Dataset
 from modelbuilder.model import Model
@@ -5,7 +10,7 @@ from modelbuilder.validation.validate import build_metrics
 
 from api.helpers.bq import get_df_from_bq_query
 from api.helpers.mlflow import register_mlflow
-from config.config import QUERY_TRAINDATA, KEYS, FEATURES_CAT, FEATURES_NUM, TARGET
+from api.config import QUERY_TRAINDATA, KEYS, FEATURES_CAT, FEATURES_NUM, TARGET
 
 
 def load_dataset():
@@ -36,8 +41,8 @@ def create_pipeline():
     from sklearn.pipeline import Pipeline
 
     # Dividimos las columnas en categóricas y numéricas
-    categorical_columns = ['Category'] # FEATURES_CAT
-    numeric_columns = ['Engine_volume'] # FEATURES_NUM
+    categorical_columns = FEATURES_CAT
+    numeric_columns = FEATURES_NUM
 
     # Definimos el preprocesamiento para cada tipo de columna
     # Para las categóricas usamos OneHotEncoder
@@ -77,24 +82,33 @@ def get_splitter():
     return splitter
 
 def train():
+    log.info("Starting train...")
+    try:
+        # Get data and pipeline
+        dataset = load_dataset()
+        pipeline = create_pipeline()
+        log.info("Loaded dataset and pipeline")
 
-    # Get data and pipeline
-    dataset = load_dataset()
-    pipeline = create_pipeline()
+        # Create object model and fit it
+        model_name = "car_price"
+        model = Model(model_name, pipeline)
+        model.fit(dataset)
+        log.info("Model fitted.")
 
-    # Create object model and fit it
-    model_name = "car_price"
-    model = Model(model_name, pipeline)
-    model.fit(dataset)
+        # Validate model and get metrics
+        splitter = get_splitter()
+        metrics = build_metrics(model, model.dataset, splitter)
+        log.info("Model validated.")
 
-    # Validate model and get metrics
-    splitter = get_splitter()
-    metrics = build_metrics(model, model.dataset, splitter)
+        # Register on mlflow
+        import os
+        os.environ["MLFLOW_TRACKING_URI"]="http://host.docker.internal:5000"
+        runid = register_mlflow(experiment = model_name, python_model = model, metrics = metrics, params={}, tags = {})
+        log.info(f"Model registered in MLFLOW with runid: {runid}.")
 
-    # Register on mlflow
-    # import os
-    # os.environ["MLFLOW_TRACKING_URI"]="http://host.docker.internal:5000"
-    runid = register_mlflow(experiment = model_name, python_model = model, metrics = metrics, params={}, tags = {})
+        return runid
+    except:
+        log.exception("An error ocurred while training.")
     
 
 
