@@ -8,6 +8,7 @@ from fastapi import APIRouter, Response, status
 from .models import InferRequest, InferResponse, DeployRequest
 from .train import train
 from .infer import ModelManager, parse_entry
+from .helpers.bq import insert_row
 
 router = APIRouter()
 modelmanager = ModelManager()
@@ -44,15 +45,19 @@ def index(payload: InferRequest):
     features = payload.features
     log.info(features)
 
+    # Parse dataset
     dataset = parse_entry(features)
+
     try:
-      # # Call backend
+      # Call backend model
       dataset = modelmanager.model.predict(None, dataset)
-      log.info(dataset)
 
+      # Insert on BQ
+      insert_row(dataset.data)
+
+      # Parse response for API
       response = dataset.data[["ID","prediction"]].to_dict("records")[0]
-
-      log.info(f"Response dict: {response}")
+      log.info(response)
       return {"state": "OK", "prediction": response}
     except:
        log.exception("Ups")

@@ -14,11 +14,9 @@ def parse_entry(data):
 
         data = pd.DataFrame(data, index=[0])
 
-        log.info(data.head())
-
         for feature in (FEATURES_CAT + FEATURES_NUM):
             if feature not in data.columns:
-                data[feature] = np.nan
+                data[feature] = None
 
         # Create dataset object
         dataset = Dataset.from_column_types(data, KEYS, FEATURES_CAT + FEATURES_NUM, TARGET)
