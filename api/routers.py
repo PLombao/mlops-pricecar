@@ -4,6 +4,7 @@ log = logging.getLogger(__name__)
 ##########################################
 
 import threading
+import time
 from fastapi import APIRouter
 from .models import InferRequest, InferResponse, DeployRequest
 from .train import train
@@ -40,7 +41,7 @@ def index(payload: DeployRequest):
 @router.post('/predict', response_model=InferResponse)
 def index(payload: InferRequest):
     log.info(f"Received request to predict.")
-    
+    t0 = time.time()
     # Parse entry and build dataset
     features = payload.features
     log.info(features)
@@ -51,13 +52,14 @@ def index(payload: InferRequest):
     try:
       # Call backend model
       dataset = modelmanager.model.predict(None, dataset)
-      log.info(dataset.data.columns)
+ 
       # Insert on BQ
       insert_row(dataset.data)
 
       # Parse response for API
       response = dataset.data[["ID","prediction", "ci_min","ci_max"]].to_dict("records")[0]
       log.info(response)
+      log.info(f"Inference time: {time.time() - t0}s")
       return {"state": "OK", "prediction": response}
     except:
        log.exception("Ups")

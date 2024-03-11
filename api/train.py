@@ -3,7 +3,7 @@ import logging
 log = logging.getLogger(__name__)
 ##########################################
 
-
+import time
 from modelbuilder.dataset import Dataset
 from modelbuilder.model import Model
 from modelbuilder.validation.validate import build_metrics
@@ -91,6 +91,7 @@ def get_splitter():
 
 def train():
     log.info("Starting train...")
+    t0 = time.time()
     try:
         # Get data, pipeline and ci
         dataset = load_dataset()
@@ -114,7 +115,7 @@ def train():
         os.environ["MLFLOW_TRACKING_URI"]="http://host.docker.internal:5000"
         runid = register_mlflow(experiment = model_name, python_model = model, metrics = metrics, params={}, tags = {})
         log.info(f"Model registered in MLFLOW with runid: {runid}.")
-
+        log.info(f"Training time: {time.time() - t0}s")
         return runid
     except:
         log.exception("An error ocurred while training.")
