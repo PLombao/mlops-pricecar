@@ -4,7 +4,7 @@ log = logging.getLogger(__name__)
 ##########################################
 
 import threading
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter
 from .models import InferRequest, InferResponse, DeployRequest
 from .train import train
 from .infer import ModelManager, parse_entry
@@ -51,12 +51,12 @@ def index(payload: InferRequest):
     try:
       # Call backend model
       dataset = modelmanager.model.predict(None, dataset)
-
+      log.info(dataset.data.columns)
       # Insert on BQ
       insert_row(dataset.data)
 
       # Parse response for API
-      response = dataset.data[["ID","prediction"]].to_dict("records")[0]
+      response = dataset.data[["ID","prediction", "ci_min","ci_max"]].to_dict("records")[0]
       log.info(response)
       return {"state": "OK", "prediction": response}
     except:

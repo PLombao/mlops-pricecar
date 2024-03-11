@@ -73,6 +73,14 @@ def create_pipeline():
     
     return pipeline
 
+def get_ci():
+    """"
+    Get Confidence Interval
+    """
+    from api.confidence_interval import ConfidenceIntervalEnsemble
+    ci = ConfidenceIntervalEnsemble()
+    return ci
+
 def get_splitter():
     """
     Get splitter for validation
@@ -84,14 +92,15 @@ def get_splitter():
 def train():
     log.info("Starting train...")
     try:
-        # Get data and pipeline
+        # Get data, pipeline and ci
         dataset = load_dataset()
         pipeline = create_pipeline()
+        ci = get_ci()
         log.info("Loaded dataset and pipeline")
 
         # Create object model and fit it
         model_name = "car_price"
-        model = Model(model_name, pipeline)
+        model = Model(model_name, pipeline, ci)
         model.fit(dataset)
         log.info("Model fitted.")
 

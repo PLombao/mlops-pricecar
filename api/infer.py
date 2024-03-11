@@ -7,7 +7,7 @@ import numpy as np
 from api.helpers.mlflow import download_model_from_mlflow
 from api.config import MLFLOW_EXPERIMENT, MLFLOW_BUCKET_NAME
 from modelbuilder.dataset import Dataset
-from api.config import KEYS, FEATURES_CAT, FEATURES_NUM, TARGET
+from api.config import KEYS, FEATURES_CAT, FEATURES_NUM, TARGET, INIT_RUNID
 
 def parse_entry(data):
     try:
@@ -27,10 +27,11 @@ def parse_entry(data):
 
 class ModelManager():
     def __init__(self):
-        self.runid = "0c909193a2374489aba41d5a27c90ea5"
+        self.runid = INIT_RUNID
         self.model = None
         self.update_model(self.runid)
 
     def update_model(self, runid):
         self.runid = runid
         self.model = download_model_from_mlflow(runid=self.runid, artifacts_bucket = MLFLOW_BUCKET_NAME, experiments_folder = MLFLOW_EXPERIMENT)
+        self.model.base_error = 0
