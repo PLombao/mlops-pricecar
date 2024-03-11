@@ -20,9 +20,6 @@ def load_dataset():
     # Load data from BQ
     data = get_df_from_bq_query(QUERY_TRAINDATA)
 
-    print(data.columns)
-    print(data.head())
-
     # Create dataset object
     dataset = Dataset.from_column_types(data, KEYS, FEATURES_CAT + FEATURES_NUM, TARGET)
     return dataset

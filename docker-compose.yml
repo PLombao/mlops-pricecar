@@ -13,7 +13,6 @@ services:
         environment:      
             - PRODUCTION=0
         volumes:
-            - ./mlruns2:/mlruns2
             - ./logs:/logs
     api:
         build:

@@ -8,6 +8,6 @@ FEATURES_CAT = ["Manufacturer", "Category", "Leather_interior", "Fuel_type","Gea
 FEATURES_NUM = ["Prod__year", "Engine_volume", "Mileage", "Cylinders"]
 
 
-MLFLOW_EXPERIMENT = "196847260286025580"
+MLFLOW_EXPERIMENT = "307835850722356415"
 MLFLOW_BUCKET_NAME = "mlflow-plv"
-INIT_RUNID = "4690c5c7d01a4f7689e7e34c4afe1f39"
+INIT_RUNID = "1a1c3087a95e4400af64b6b45f1f6220"

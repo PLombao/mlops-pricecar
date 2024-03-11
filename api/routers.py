@@ -62,7 +62,7 @@ def index(payload: InferRequest):
       log.info(f"Inference time: {time.time() - t0}s")
       return {"state": "OK", "prediction": response}
     except:
-       log.exception("Ups")
+       log.exception("An exception ocurred on infer loop.")
 
 
 import random
